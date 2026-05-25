@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Website Sekolah</title>
+
+<style>
+body { font-family: Arial; margin:0; background:#eef2f3; }
+
+header { background:#0f6c74; color:white; text-align:center; padding:20px; }
+nav { background:#14919b; text-align:center; padding:10px; }
+nav a { color:white; margin:15px; cursor:pointer; font-weight:bold; }
+
+.container { padding:20px; }
+.card { background:white; padding:15px; border-radius:10px; margin-bottom:15px; }
+
+.page { display:none; }
+.active { display:block; }
+
+input { padding:8px; width:80%; margin:5px 0; }
+button { padding:8px; background:#0f6c74; color:white; border:none; cursor:pointer; }
+
+footer { background:#0f6c74; color:white; text-align:center; padding:10px; }
+
+/* LOGIN */
+#loginPage {
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.login-box {
+  background:white;
+  padding:20px;
+  border-radius:10px;
+  width:300px;
+  text-align:center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <div class="login-box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Masuk</button>
+    <p id="error" style="color:red;"></p>
+  </div>
+</div>
+
+<!-- WEBSITE -->
+<div id="mainWeb" style="display:none;">
+
+<header>
+  <h1>Website Informasi & Kegiatan Sekolah</h1>
+  <button onclick="logout()">Logout</button>
+</header>
+
+<nav>
+  <a onclick="showPage('home')">Beranda</a>
+  <a onclick="showPage('profil')">Profil</a>
+  <a onclick="showPage('kegiatan')">Kegiatan</a>
+  <a onclick="showPage('pengumuman')">Pengumuman</a>
+</nav>
+
+<div class="container">
+
+<div id="home" class="page active">
+  <div class="card">
+    <h2>Selamat Datang</h2>
+    <p id="roleText"></p>
+  </div>
+</div>
+
+<div id="profil" class="page">
+  <div class="card">
+    <h2>Profil Sekolah</h2>
+    <p>SMKN 1 Banyuwangi</p>
+    <p><b>Alamat:</b>Jl. Wijaya Kusuma No. 46, Mojopanggung, Giri, Banyuwangi</p>
+    <p><b>Visi:</b>Terwujudnya lulusan berkualitas, berdaya saing dan berbudaya bangsa</p>
+    <p><b>Misi:</b></p>
+    <ul>
+      <li>Mengoptimalkan pembelajaran berbasis industri dan project riil</li>
+      <li>Mengembangkan kerjasama dengan iduka skala nasional/ internasional</li>
+      <li>Meningkatkan kerja sama dengan perguruan tingi vokasi</li>
+    </ul>
+  </div>
+</div>
+
+<!-- KEGIATAN -->
+<div id="kegiatan" class="page">
+  <div class="card" id="formKegiatan">
+    <h2>Tambah Kegiatan</h2>
+    <input id="namaKegiatan" placeholder="Nama"><br>
+    <input type="date" id="tanggalKegiatan"><br>
+    <input id="deskripsiKegiatan" placeholder="Deskripsi"><br>
+    <button onclick="tambahKegiatan()">Tambah</button>
+  </div>
+
+  <div class="card">
+    <h2>Daftar Kegiatan</h2>
+    <div id="listKegiatan"></div>
+  </div>
+</div>
+
+<!-- PENGUMUMAN -->
+<div id="pengumuman" class="page">
+  <div class="card" id="formPengumuman">
+    <h2>Tambah Pengumuman</h2>
+    <input id="judulPengumuman" placeholder="Judul"><br>
+    <input type="date" id="tanggalPengumuman"><br>
+    <input id="isiPengumuman" placeholder="Isi"><br>
+    <button onclick="tambahPengumuman()">Tambah</button>
+  </div>
+
+  <div class="card">
+    <h2>Daftar Pengumuman</h2>
+    <div id="listPengumuman"></div>
+  </div>
+</div>
+
+</div>
+
+<footer>
+  <p>© 2026 Website Sekolah</p>
+</footer>
+
+</div>
+
+<script>
+
+// LOGIN SYSTEM
+let role = "";
+
+function login() {
+  let user = username.value;
+  let pass = password.value;
+
+  if (user === "admin" && pass === "admin123") {
+    role = "admin";
+  } else {
+    role = "user";
+  }
+
+  loginPage.style.display = "none";
+  mainWeb.style.display = "block";
+
+  roleText.innerText = "Login sebagai: " + role;
+
+  // sembunyikan form kalau bukan admin
+  if (role !== "admin") {
+    formKegiatan.style.display = "none";
+    formPengumuman.style.display = "none";
+  }
+}
+
+function logout() {
+  location.reload();
+}
+
+// NAVIGASI
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// DATA
+let kegiatan = JSON.parse(localStorage.getItem("kegiatan")) || [];
+let pengumuman = JSON.parse(localStorage.getItem("pengumuman")) || [];
+
+function simpan() {
+  localStorage.setItem("kegiatan", JSON.stringify(kegiatan));
+  localStorage.setItem("pengumuman", JSON.stringify(pengumuman));
+}
+
+// KEGIATAN
+function tampilkanKegiatan() {
+  listKegiatan.innerHTML = "";
+
+  kegiatan.forEach((item, i) => {
+    listKegiatan.innerHTML += `
+      <b>${item.nama}</b><br>
+      Tanggal: ${item.tanggal}<br>
+      Deskripsi: ${item.deskripsi}<br>
+      ${role === "admin" ? `<button onclick="hapusKegiatan(${i})">Hapus</button>` : ""}
+      <hr>
+    `;
+  });
+}
+
+function tambahKegiatan() {
+  kegiatan.push({
+    nama: namaKegiatan.value,
+    tanggal: tanggalKegiatan.value,
+    deskripsi: deskripsiKegiatan.value
+  });
+  simpan();
+  tampilkanKegiatan();
+}
+
+function hapusKegiatan(i) {
+  kegiatan.splice(i,1);
+  simpan();
+  tampilkanKegiatan();
+}
+
+// PENGUMUMAN
+function tampilkanPengumuman() {
+  listPengumuman.innerHTML = "";
+
+  pengumuman.forEach((item, i) => {
+    listPengumuman.innerHTML += `
+      <b>${item.judul}</b><br>
+      Tanggal: ${item.tanggal}<br>
+      Isi: ${item.isi}<br>
+      ${role === "admin" ? `<button onclick="hapusPengumuman(${i})">Hapus</button>` : ""}
+      <hr>
+    `;
+  });
+}
+
+function tambahPengumuman() {
+  pengumuman.push({
+    judul: judulPengumuman.value,
+    tanggal: tanggalPengumuman.value,
+    isi: isiPengumuman.value
+  });
+  simpan();
+  tampilkanPengumuman();
+}
+
+function hapusPengumuman(i) {
+  pengumuman.splice(i,1);
+  simpan();
+  tampilkanPengumuman();
+}
+
+// LOAD
+tampilkanKegiatan();
+tampilkanPengumuman();
+
+</script>
+
+</body>
+</html>
